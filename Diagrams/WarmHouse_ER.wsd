@@ -1,0 +1,76 @@
+@startuml
+
+rectangle API_UserManagement_Database {
+    entity "User" {
+    + UserId : int <<PK>>
+    + Name : string
+    + Surname: string
+    + Address: string
+    + Email: string
+    + Phone: string
+    }
+
+    entity "HeatingSystemDueDate" {
+        + HeatingSystemId : int <PK>>
+        + UserId: int <<FK>>
+        + PayedBefore: DateTime
+    }
+
+        entity "TriggerDueDate" {
+        + TriggerId : int <PK>>
+        + UserId: int <<FK>>
+        + PayedBefore: DateTime
+    }
+} 
+
+rectangle API_HeatingSystem_Database {
+    entity "HeatingSystemUserEvent" {
+    + UserEvent : int <<PK>>
+    + UserId: int <<FK>>
+    + Date : DateTime
+    + EventType : int
+    }
+
+    entity "HeatingSystem" {
+    + HeatingSystemId : int <<PK>>
+    + Date : DateTime  
+    + IsOn : boolean
+    + TargetTemperature: double
+    + CurrentTemperature: double
+    }
+} 
+
+rectangle API_Trigger_Database {
+    entity "TriggerUserEvent" {
+    + UserEvent : int <<PK>>
+    + UserId: int <<FK>>
+    + Date : DateTime
+    + EventType : int
+    }
+
+    entity "Trigger" {
+    + TriggerId : int <<PK>>
+    + Date : DateTime  
+    + IsOn : boolean
+    }
+} 
+
+rectangle TransactionManagement_Database {
+    entity "Transaction" {
+    + TransactionId : int <<PK>>
+    + CreatedDate: DateTime
+    + UserId: int <<FK>>
+    + Sum: number
+    }
+}
+
+User ||--o{ HeatingSystemUserEvent
+User ||--o{ TriggerUserEvent
+User ||--o{ HeatingSystemDueDate
+User ||--o{ TriggerDueDate
+User ||--o{ Transaction
+HeatingSystem ||--|| HeatingSystemDueDate
+Trigger ||--|| TriggerDueDate
+
+
+@enduml

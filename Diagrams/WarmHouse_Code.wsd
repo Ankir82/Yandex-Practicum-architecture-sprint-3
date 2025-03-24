@@ -1,0 +1,76 @@
+@startuml
+
+title apiHeatingSystem - C4 - Class Diagram
+
+class HeatingSystemController {
+  + HeatingSystemDto getHeatingSystem(Long Id)
+  + void updateHeatingSystem(Long Id, HeatingSystemDto dto)
+  + Long registerHeatingSystem(HeatingSystemDto dto)
+  + void turnOn(Long Id)
+  + void turnOff(Long Id)
+  + void setTargetTemperature(Long Id, double temperature)
+  + double getCurrentTemperature(Long Id)
+}
+
+class PaymentService {
+  + HeatingSystemDto getHeatingSystem(Long Id)
+  + void updateHeatingSystem(Long Id, HeatingSystemDto dto)
+  + Long registerHeatingSystem(HeatingSystemDto dto)
+  + void turnOn(Long Id)
+  + void turnOff(Long Id)
+  + void setTargetTemperature(Long Id, double temperature)
+  + double getCurrentTemperature(Long Id)
+}
+
+HeatingSystemController --> PaymentService : calls
+
+class HeatingSystemRepository {
+    + HeatingSystem findById(Long id)
+    + void save(HeatingSystem value)
+}
+
+class HeatingSystemUserEventsRepository {
+    + HeatingSystem findByUserId(Long id)
+    + void save(UserEvent value)
+}
+
+class HeatingSystemResponseHandler {
+    + void ProcessResponce()
+}
+
+PaymentService --> HeatingSystemRepository : calls
+HeatingSystemResponseHandler --> HeatingSystemRepository : calls
+PaymentService --> HeatingSystemUserEventsRepository : calls
+
+class HeatingSystem {
+    + Long id <<PK>>
+    + boolean isOn
+    + double targetTemperature
+    + double currentTemperature
+}
+
+class HeatingSystemDto {
+    + Long id
+    + boolean isOn
+    + double targetTemperature
+    + double currentTemperature
+}
+
+HeatingSystemController --> HeatingSystemDto : uses
+PaymentService --> HeatingSystem : uses
+HeatingSystemResponseHandler --> HeatingSystem : uses
+HeatingSystemRepository --> HeatingSystem: uses
+
+class UserEvent {
+    + Long id <<PK>>
+    + Long heatingSystemId
+    + date eventDate
+    + time eventTime
+    + eventType EventType
+}
+
+PaymentService --> UserEvent : uses 
+HeatingSystemUserEventsRepository --> UserEvent : uses 
+
+
+@enduml

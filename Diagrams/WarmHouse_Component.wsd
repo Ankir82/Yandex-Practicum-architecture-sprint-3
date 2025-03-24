@@ -1,0 +1,42 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+AddRelTag("sync", $textColor="black", $lineColor="black", $lineStyle = DashedLine())
+
+LAYOUT_WITH_LEGEND()
+
+title CRM Order Management System - Component Diagram
+
+System_Boundary(HeatingSystem_boungary, "Поддомен: управление отоплением") {
+    Container(apiHeatingSystem, "API_HeatingSystem", "Java", "Бизнес логика управления системой отопления") {
+        Component(HeatingSystemController, "HeatingSystemController", "Обработка api по управлению системой отопление")
+        Component(HeatingSystemRegistrationController, "HeatingSystemRegistrationController", "Обработка api по регистрации пользователем новой системы отопления")
+        Component(HeatingSystemService, "HeatingSystemService", "Управление системой отопления")
+        Component(HeatingSystemRepository, "HeatingSystemRepository", "Обработка CRUD операций по объекту система отопления")
+        Component(HeatingSystemUserEventsRepository, "HeatingSystemUserEventsRepository", "Обработка CRUD операций по объекту действия пользователя над системой отопления")
+        Component(HeatingSystemResponseHandler, "HeatingSystemResponceHandler", "Обработка ответов от устройства")
+    }
+    Container(HeatingSystemProcessing, "HeatingSystemProcessing", "Java", "Взаимодействие с системой отопления"){
+        Component(HeatingSystemProcessor, "HeatingSystemProcessor", "Работа с устройством система отопления")
+        Component(HeatingSystemAdapter, "HeatingSystemAdapter", "Обеспечивает взаимодействие с конкретным протоколом для устройства системы отопления")
+    }
+    ContainerQueue(HeatingSystemQueue, "HeatingSystemQueue", "kafka", "")
+    ContainerDb(databaseHeatingSystem, "HeatingSystem Database", "PostgreSQL", "Хранение информации о текущем состоянии системы отопления")
+
+}
+
+System_Ext(HeatingSystem, "Система отопления", "")
+
+Rel(HeatingSystemController, HeatingSystemService, "Обработка запросов по получению данных и изменению информации о системе управления", $tags="sync")
+Rel(HeatingSystemRegistrationController, HeatingSystemService, "Обработка запросов по регистрации пользователм новой системы отопления", $tags="sync")
+Rel(HeatingSystemService, HeatingSystemRepository, "Получение и запись данных о системе отопления", $tags="sync")
+Rel(HeatingSystemResponseHandler, HeatingSystemRepository, "Получение и запись данных о системе отопления", $tags="sync")
+Rel(HeatingSystemService, HeatingSystemUserEventsRepository, "Получение и запись данных о действиях пользователя", $tags="sync")
+Rel(HeatingSystemRepository, databaseHeatingSystem, "Чтение и запись данных о системе отопления", $tags="sync")
+Rel(HeatingSystemUserEventsRepository, databaseHeatingSystem, "Чтение и запись данных о действиях пользователя", $tags="sync")
+Rel(HeatingSystemService, HeatingSystemQueue, "Отправка запросов на получение данных с устройства", $tags="sync")
+Rel(HeatingSystemQueue, HeatingSystemResponseHandler, "Получение обновленных данных от устройства", $tags="sync")
+Rel(HeatingSystemQueue, HeatingSystemProcessor, "Отправка запросов на получение данных с устройства", $tags="sync")
+Rel(HeatingSystemProcessor, HeatingSystemAdapter, "Отправка запросов на устройство", $tags="sync")
+Rel(HeatingSystemProcessor, HeatingSystemQueue, "Отправка обновленных данных от устройства", $tags="sync")
+Rel(HeatingSystemAdapter, HeatingSystem, "Запрос данных с устройства", $tags="sync")
+@enduml
