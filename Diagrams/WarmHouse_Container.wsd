@@ -1,0 +1,56 @@
+@startuml
+!include https://raw.githubusercontent.com/kirchsth/C4-PlantUML/extended/C4_Container.puml
+
+AddRelTag("sync", $textColor="black", $lineColor="black", $lineStyle = DashedLine())
+
+LAYOUT_WITH_LEGEND()
+
+title Теплый дом (текущая архитектура) - Container Diagram
+
+Person(customer, "Пользователь", "")
+
+System(WarmHouse, "Теплый дом (backend)", "") {
+    System_Boundary(frontend_boungary, "") {
+      Container(webApp, "Web Application", "React", "")
+      Container(mobileApp, "Mobile Application", "ReactNative", "")
+    }
+    System_Boundary(Trigger_boungary, "Поддомен: управление триггерами") {
+      Container(apiTrigger, "API_Trigger", "Java", "Бизнес логика управления триггерами")
+      Container(TriggerProcessing, "TriggerProcessing", "Java", "Взаимодействие с устройствами триггеров")
+      ContainerDb(databaseTrigger, "Trigger Database", "PostgreSQL", "Хранение информации о текущем состоянии триггеров.")
+    }
+    System_Boundary(HeatingSystem_boungary, "Поддомен: управление отоплением") {
+      Container(apiHeatingSystem, "API_HeatingSystem", "Java", "Бизнес логика управления системой отопления")
+      Container(HeatingSystemProcessing, "HeatingSystemProcessing", "Java", "Взаимодействие с системой отопления")
+      ContainerDb(databaseHeatingSystem, "HeatingSystem Database", "PostgreSQL", "Хранение информации о текущем состоянии системы отопления")
+    }
+    System_Boundary(Payment_boungary, "Поддомен: Оплата услуг и управления доступом") {
+      Container(apiUserManagment, "API_UserManagement", "Java", "Бизнес логика авторизации и обеспечения доступа пользователей на основе оплат")
+      Container(apiTransactionManagement, "API_Transaction", "Java", "Бизнес логика обработки транзакций оплаты за SaaS")
+      ContainerDb(databaseUserManagment, "UserManagement Database", "PostgreSQL", "Хранение информации о пользователе и статусе оплаты услуг")
+      ContainerDb(databaseTransactionManagement, "Transaction Database", "PostgreSQL", "Хранение информации о транзакциях пользователя")
+    }
+}
+
+System_Ext(HeatingSystem, "Система отопления", "")
+System_Ext(Trigger, "Триггер", "")
+System_Ext(paymentSystem, "Внешние системы оплаты", "Яндекс.Pay, FastMoney, Paypal")
+
+Rel_D(customer, mobileApp, "Управление отоплением, установка состояния триггера", $tags="sync")
+Rel_D(customer, mobileApp, "Подключение нового устройства", $tags="sync")
+Rel_D(customer, webApp, "Управление отоплением, установка состояния триггера", $tags="sync")
+Rel_L(frontend_boungary, apiTrigger, "REST", $tags="sync")
+Rel_L(frontend_boungary, apiUserManagment, "REST", $tags="sync")
+Rel_L(frontend_boungary, apiHeatingSystem, "REST", $tags="sync")
+Rel_L(apiTrigger, databaseTrigger, "Запись и чтение информации о текущем состоянии триггеров", $tags="sync")
+Rel_L(apiHeatingSystem, databaseHeatingSystem, "Запись и чтение информации о текущем состоянии триггеров", $tags="sync")
+Rel_D(HeatingSystemProcessing, HeatingSystem, "Получение\изменение параметров системы отопления", $tags="sync")
+Rel_D(apiHeatingSystem, HeatingSystemProcessing, "Получение\изменение параметров системы отопления","kafka", $tags="sync")
+Rel_L(apiUserManagment, databaseUserManagment, "Запись и чтение информации о текущем состоянии триггеров", $tags="sync")
+Rel_L(apiTransactionManagement, databaseTransactionManagement, "Запись и чтение информации о текущем состоянии триггеров", $tags="sync")
+Rel_D(TriggerProcessing, Trigger, "Получение\изменение параметров системы отопления", $tags="sync")
+Rel_D(apiTrigger, TriggerProcessing, "Получение\изменение параметров системы отопления", "kafka", $tags="sync")
+Rel_D(apiTransactionManagement, apiUserManagment, "Передача информации о платеже", $tags="sync")
+Rel_D(paymentSystem, apiTransactionManagement, "Получение факта оплаты пользователем", $tags="sync")
+
+@enduml

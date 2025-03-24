@@ -1,0 +1,17 @@
+@startuml
+!include https://raw.githubusercontent.com/kirchsth/C4-PlantUML/extended/C4_Container.puml
+
+AddRelTag("sync", $textColor="black", $lineColor="black", $lineStyle = DashedLine())
+
+LAYOUT_WITH_LEGEND()
+
+title Теплый дом - Context Diagram
+
+Person(customer, "Пользователь", "Управляет устройствами и получает телеметрию")
+System_Ext(ExtDevices, "Устройство умного дома", "Система отопления")
+System(WarmHouse, "WarmHouse", "Управление системой отопления, получение ее телеметрии")
+
+Rel_D(customer, WarmHouse, "Настройка системы отопления, получение телеметрии", $tags="sync")
+Rel_D(WarmHouse, ExtDevices, "Получение\изменение параметров системы отопления", $tags="sync")
+
+@enduml
